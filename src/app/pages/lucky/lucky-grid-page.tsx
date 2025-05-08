@@ -1,84 +1,18 @@
-// "use client"
-//
-// import React, {useState, useRef} from 'react'
-// // @ts-ignore
-// import {LuckyGrid} from '@lucky-canvas/react'
-//
-// /**
-//  * 大转盘文档：https://100px.net/docs/grid.html
-//  * @constructor
-//  */
-// export function LuckyGridPage() {
-//     // 背景
-//     const [blocks] = useState([
-//         {padding: '10px', background: '#869cfa'}
-//     ])
-//
-//     const [prizes] = useState([
-//         {x: 0, y: 0, fonts: [{text: 'A', top: '35%'}]},
-//         {x: 1, y: 0, fonts: [{text: 'B', top: '35%'}]},
-//         {x: 2, y: 0, fonts: [{text: 'C', top: '35%'}]},
-//         {x: 2, y: 1, fonts: [{text: 'D', top: '35%'}]},
-//         {x: 2, y: 2, fonts: [{text: 'E', top: '35%'}]},
-//         {x: 1, y: 2, fonts: [{text: 'F', top: '35%'}]},
-//         {x: 0, y: 2, fonts: [{text: 'G', top: '35%'}]},
-//         {x: 0, y: 1, fonts: [{text: 'H', top: '35%'}]},
-//     ])
-//
-//     const [buttons] = useState([
-//         {x: 1, y: 1, background: "#7f95d1", fonts: [{text: '开始', top: '35%'}]}
-//     ])
-//
-//     const [defaultStyle] = useState([{background: "#b8c5f2"}])
-//
-//     // @ts-ignore
-//     const myLucky = useRef()
-//
-//     return <>
-//         <LuckyGrid
-//             ref={myLucky}
-//             width="300px"
-//             height="300px"
-//             rows="3"
-//             cols="3"
-//             prizes={prizes}
-//             defaultStyle={defaultStyle}
-//             buttons={buttons}
-//             onStart={() => { // 点击抽奖按钮会触发star回调
-//                 // @ts-ignore
-//                 myLucky.current.play()
-//                 setTimeout(() => {
-//                     const index = Math.random() * 8 >> 0
-//                     // @ts-ignore
-//                     myLucky.current.stop(index)
-//                 }, 2500)
-//             }}
-//             onEnd={
-//                 // @ts-ignore
-//                 prize => {
-//                     alert('恭喜你抽到 ' + prize.fonts[0].text + ' 号奖品')
-//                 }
-//             }>
-//
-//         </LuckyGrid>
-//     </>
-// }
-
-
 "use client"
 
-import React, {useState, useRef, useEffect} from 'react'
+import React, {useState, useRef, useEffect, useContext} from 'react'
 // @ts-ignore
 import {LuckyGrid} from '@lucky-canvas/react'
 import {draw, queryRaffleAwardList} from "@/apis";
+import {RaffleAwardVO} from "@/types/RaffleAwardVO";
 
 /**
  * 大转盘文档：https://100px.net/docs/grid.html
  * @constructor
  */
-export function LuckyGridPage() {
+// @ts-ignore
+export function LuckyGridPage({handleRefresh}) {
     const [prizes, setPrizes] = useState([{}])
-    // @ts-ignore
     const myLucky = useRef()
 
     const queryRaffleAwardListHandle = async () => {
@@ -86,7 +20,8 @@ export function LuckyGridPage() {
         const userId = String(queryParams.get('userId'));
         const activityId = Number(queryParams.get('activityId'));
         const result = await queryRaffleAwardList(userId, activityId);
-        const {code, info, data} = await result.json();
+        const {code, info, data}: { code: string; info: string; data: RaffleAwardVO[] } = await result.json();
+
         if (code != "0000") {
             window.alert("获取抽奖奖品列表失败 code:" + code + " info:" + info)
             return;
@@ -94,10 +29,30 @@ export function LuckyGridPage() {
 
         // 创建一个新的奖品数组
         const prizes = [
-            {x: 0, y: 0, fonts: [{text: data[0].awardTitle, top: '80%', fontSize: '12px', fontWeight: '800'}], imgs: [{src: "/raffle-award-00.png", width: "100px", height: "100px", activeSrc: "/raffle-award.png"}]},
-            {x: 1, y: 0, fonts: [{text: data[1].awardTitle, top: '80%', fontSize: '12px', fontWeight: '800'}], imgs: [{src: "/raffle-award-01.png", width: "100px", height: "100px", activeSrc: "/raffle-award.png"}]},
-            {x: 2, y: 0, fonts: [{text: data[2].awardTitle, top: '80%', fontSize: '12px', fontWeight: '800'}], imgs: [{src: "/raffle-award-02.png", width: "100px", height: "100px", activeSrc: "/raffle-award.png"}]},
-            {x: 2, y: 1, fonts: [{text: data[3].awardTitle, top: '80%', fontSize: '12px', fontWeight: '800'}], imgs: [{src: "/raffle-award-12.png", width: "100px", height: "100px", activeSrc: "/raffle-award.png"}]},
+            {
+                x: 0,
+                y: 0,
+                fonts: [{text: data[0].awardTitle, top: '80%', fontSize: '12px', fontWeight: '800'}],
+                imgs: [{src: "/raffle-award-00.png", width: "100px", height: "100px", activeSrc: "/raffle-award.png"}]
+            },
+            {
+                x: 1,
+                y: 0,
+                fonts: [{text: data[1].awardTitle, top: '80%', fontSize: '12px', fontWeight: '800'}],
+                imgs: [{src: "/raffle-award-01.png", width: "100px", height: "100px", activeSrc: "/raffle-award.png"}]
+            },
+            {
+                x: 2,
+                y: 0,
+                fonts: [{text: data[2].awardTitle, top: '80%', fontSize: '12px', fontWeight: '800'}],
+                imgs: [{src: "/raffle-award-02.png", width: "100px", height: "100px", activeSrc: "/raffle-award.png"}]
+            },
+            {
+                x: 2,
+                y: 1,
+                fonts: [{text: data[3].awardTitle, top: '80%', fontSize: '12px', fontWeight: '800'}],
+                imgs: [{src: "/raffle-award-12.png", width: "100px", height: "100px", activeSrc: "/raffle-award.png"}]
+            },
             {
                 x: 2,
                 y: 2,
@@ -146,7 +101,12 @@ export function LuckyGridPage() {
                     activeSrc: "/raffle-award.png"
                 }]
             },
-            {x: 0, y: 1, fonts: [{text: data[7].awardTitle, top: '80%', fontSize: '12px', fontWeight: '800'}], imgs: [{src: "/raffle-award-10.png", width: "100px", height: "100px", activeSrc: "/raffle-award.png"}]},
+            {
+                x: 0,
+                y: 1,
+                fonts: [{text: data[7].awardTitle, top: '80%', fontSize: '12px', fontWeight: '800'}],
+                imgs: [{src: "/raffle-award-10.png", width: "100px", height: "100px", activeSrc: "/raffle-award.png"}]
+            },
         ]
 
         // 设置奖品数据
@@ -166,12 +126,20 @@ export function LuckyGridPage() {
             return;
         }
 
+        handleRefresh()
+
         // 为了方便测试，mock 的接口直接返回 awardIndex 也就是奖品列表中第几个奖品。
         return data.awardIndex - 1;
     }
 
     const [buttons] = useState([
-        {x: 1, y: 1, background: "#7f95d1", shadow:'3', imgs: [{src: "/raffle-button.png", width: "100px", height: "100px"}]}
+        {
+            x: 1,
+            y: 1,
+            background: "#7f95d1",
+            shadow: '3',
+            imgs: [{src: "/raffle-button.png", width: "100px", height: "100px"}]
+        }
     ])
 
     const [defaultStyle] = useState([{background: "#b8c5f2"}])
@@ -210,7 +178,7 @@ export function LuckyGridPage() {
                     queryRaffleAwardListHandle().then(r => {
                     });
                     // 展示奖品
-                    alert('恭喜抽中奖品💐【' + prize.fonts[0].text+'】')
+                    alert('恭喜抽中奖品💐【' + prize.fonts[0].text + '】')
                 }
             }>
 
